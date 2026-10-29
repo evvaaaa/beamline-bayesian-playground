@@ -1,0 +1,119 @@
+[build-system]
+requires = ["setuptools>=64", "setuptools_scm[toml]>=8"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "beamline-bayesian-playground"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+description = ""
+dynamic = ["version"]
+license.file = "LICENSE"
+readme = "README.md"
+requires-python = ">=3.12"
+
+# For setting up simulation devices.
+dependencies = [
+  "bluesky",
+  "ophyd-async[sim]",
+  "pandas",
+]
+
+
+# For cpu only torch.
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+
+[dependency-groups]
+
+# For use inside the queueserver.
+container = ["bluesky[dev]", "tiled[all]", "bluesky-queueserver"]
+
+# For running the agent outside the queueserver
+client = [
+  "tiled[client]",
+  "bluesky-queueserver-api",
+  "bluesky-adaptive[cpu, queueserver, ax]",
+  "torch",
+]
+
+dev = [
+    "mypy",
+    "pre-commit",
+    "ruff",
+    "tox-uv",
+    "types-mock",
+]
+
+[project.scripts]
+beamline-bayesian-playground = "beamline_bayesian_playground.__main__:main"
+
+[project.urls]
+GitHub = "https://github.com/evvaaaa/beamline-bayesian-playground"
+
+[[project.authors]] # Further authors may be added by duplicating this section
+email = "eva.lott@helmholtz-berlin.de"
+name = "Eva Lott"
+
+[tool.setuptools_scm]
+version_file = "src/beamline_bayesian_playground/_version.py"
+
+[tool.mypy]
+ignore_missing_imports = true # Ignore missing stubs in imported modules
+
+[tool.tox]
+skipsdist = true
+# envs to runs automatically with tox -p
+env_list = ["pre-commit", "type-checking"]
+
+
+
+[tool.tox.env.pre-commit]
+description = "Run pre-commit on all files"
+commands = [
+    [
+        "pre-commit",
+        "run",
+        "--all-files",
+        "--show-diff-on-failure",
+        { replace = "posargs", default = [
+        ], extend = true },
+    ],
+]
+
+[tool.tox.env.type-checking]
+description = "Run mypy"
+commands = [
+    [
+        "mypy",
+        "src",
+        { replace = "posargs", default = [
+        ], extend = true },
+    ],
+]
+
+[tool.ruff]
+src = ["src"]
+line-length = 100
+lint.select = [
+    "B",   # flake8-bugbear - https://docs.astral.sh/ruff/rules/#flake8-bugbear-b
+    "C4",  # flake8-comprehensions - https://docs.astral.sh/ruff/rules/#flake8-comprehensions-c4
+    "E",   # pycodestyle errors - https://docs.astral.sh/ruff/rules/#error-e
+    "F",   # pyflakes rules - https://docs.astral.sh/ruff/rules/#pyflakes-f
+    "N",   # pep8-naming - https://docs.astral.sh/ruff/rules/#pep8-naming-n
+    "W",   # pycodestyle warnings - https://docs.astral.sh/ruff/rules/#warning-w
+    "I",   # isort - https://docs.astral.sh/ruff/rules/#isort-i
+    "UP",  # pyupgrade - https://docs.astral.sh/ruff/rules/#pyupgrade-up
+    "SLF", # self - https://docs.astral.sh/ruff/settings/#lintflake8-self
+]

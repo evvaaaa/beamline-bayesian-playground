@@ -1,0 +1,15 @@
+# Changes here will be overwritten by Copier
+_commit: 5.4.0
+_src_path: https://github.com/DiamondLightSource/python-copier-template.git
+author_email: eva.lott@helmholtz-berlin.de
+author_name: Eva Lott
+description: ''
+distribution_name: beamline-bayesian-playground
+docker: true
+docs_type: README
+git_platform: github.com
+github_org: evvaaaa
+package_name: beamline_bayesian_playground
+pypi: false
+repo_name: beamline-bayesian-playground
+type_checker: mypy
