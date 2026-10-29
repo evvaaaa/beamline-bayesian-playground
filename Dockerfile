@@ -18,8 +18,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN mkdir -p /root/.ipython/profile_default/startup/
 
-# Copy the queueserver directory
+# Copy the queueserver directory.
 COPY ./src/queueserver /queueserver
+
+# Copy the non-persistent tiled db script.
+COPY ./src/tiled_db_and_writer.py /tiled_db_and_writer.py
 
 # Copy the uv dependencies and install so that it's cached.
 COPY uv.lock ./uv.lock

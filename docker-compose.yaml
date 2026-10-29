@@ -31,7 +31,7 @@ services:
     entrypoint:
       - "/bin/bash"
       - "-lc"
-      - 'python /queueserver/tiled_db_and_writer.py'
+      - 'python /tiled_db_and_writer.py'
     depends_on:
       - zmq-proxy
   queueserver:

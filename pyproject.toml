@@ -22,6 +22,10 @@ dependencies = [
   "bluesky",
   "ophyd-async[sim]",
   "pandas",
+
+  # We only need `bluesky_adaptive.plans` for 
+  # the queueserver.
+  "bluesky-adaptive"
 ]
 
 
@@ -38,7 +42,11 @@ explicit = true
 [dependency-groups]
 
 # For use inside the queueserver.
-container = ["bluesky[dev]", "tiled[all]", "bluesky-queueserver"]
+container = [
+  "bluesky[dev]",
+  "tiled[all]",
+  "bluesky-queueserver",
+]
 
 # For running the agent outside the queueserver
 client = [
