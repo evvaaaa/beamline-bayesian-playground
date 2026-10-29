@@ -46,4 +46,21 @@ Run a simulation:
 python -m beamline_bayesian_playground.m4_mirror_scan_simulation
 ```
 
-You can play around with each of these submodule's `__main__.py` to tweak agent parameters.
+You can play around with each of these submodule's `__main__.py` to tweak agent parameters, for example
+
+### Trying to maximize the fwhm of y in `m4_mirror_scan_simulation`:
+
+<img width="1913" height="2100" alt="image" src="https://github.com/user-attachments/assets/29dee5e1-e51b-40da-abbe-7e09a4ffd066" />
+
+
+### 10 iterations (moves of the motors):
+
+<img width="1698" height="1270" alt="fwhm-10-iterations" src="https://github.com/user-attachments/assets/54415ef6-ffad-4721-aeb0-dd90c3611d39" />
+
+### 20 iterations (moves of the motors):
+
+<img width="1698" height="1270" alt="fwhm-20-iterations" src="https://github.com/user-attachments/assets/8b880b3d-cc55-407a-ae73-08ed1a42ced9" />
+
+### 40 iterations (moves of the motors):
+
+<img width="1698" height="1270" alt="fwhm-40-iterations" src="https://github.com/user-attachments/assets/2b2923fe-272b-4f48-863a-046cc6984ea4" />
