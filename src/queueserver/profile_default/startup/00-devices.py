@@ -1,4 +1,4 @@
 print("loading devices... ", end="")
-from blop_mirror_testing.queueserver_devices import *  # noqa
+from beamline_bayesian_playground.queueserver_devices import *  # noqa
 
 print("done.")

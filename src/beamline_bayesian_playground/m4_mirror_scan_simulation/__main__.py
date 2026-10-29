@@ -1,14 +1,14 @@
 """Script to be ran from outside the queueserver."""
 
+import time
 from collections.abc import Mapping, Sequence
-from tiled.client.container import Container
-from bluesky_adaptive.ax import RangeDOF, Objective
+
+from bluesky.callbacks.zmq import RemoteDispatcher
+from bluesky_adaptive.ax import Objective, RangeDOF
 from bluesky_adaptive.ax.queueserver_agent import QueueserverAgent
 from bluesky_queueserver_api.zmq import REManagerAPI
 from tiled.client import from_uri
-from bluesky.callbacks.zmq import RemoteDispatcher
-import time
-
+from tiled.client.container import Container
 
 # ====== Connection to docker-compose environment.
 
@@ -65,8 +65,9 @@ class BeamFocusEvaluator:
             except KeyError:
                 time.sleep(self.poll_interval)
         raise TimeoutError(
-            f"Data path '{path}' for run '{run.metadata['start']['uid']}' was not readable after {self.timeout}s. "
-            "The ZMQ-Tiled bridge may still be writing the run."
+            f"Data path '{path}' for run '{run.metadata['start']['uid']}' was not "
+            f"readable after {self.timeout}s. The ZMQ-Tiled bridge may still be writing the run."
+            ""
         )
 
     def fwhm_evaulation(self, x: float, y: float) -> float:

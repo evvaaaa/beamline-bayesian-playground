@@ -6,6 +6,4 @@ A test blop agent for optimizing the beamline at EMIL.
 :license: MIT
 """
 
-from importlib.metadata import version
-
-__version__ = version("blop_mirror_testing")
+from ._version import __version__  # noqa

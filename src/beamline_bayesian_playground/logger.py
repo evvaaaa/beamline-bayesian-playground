@@ -1,5 +1,4 @@
-"""Logger module for blop-mirror-testing.
-"""
+"""Logger module for blop-mirror-testing."""
 
 import logging
 import sys

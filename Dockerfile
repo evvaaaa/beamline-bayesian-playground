@@ -2,7 +2,7 @@
 # A container which builds everything needed for the queueserver so that 
 # ecosystem so that respective client-side bluesky-adaptive can work.
 #
-# The dependencies from blop_mirror_testing[container] are installed on build so that
+# The dependencies from beamline-bayesian-playground[container] are installed on build so that
 # so that it doesn't take forever on each docker-compose with the mounted volume.
 # ===================================================================================
 
