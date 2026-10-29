@@ -1,0 +1,48 @@
+# A tonne of containers to run e.g plotting, queueserver, tiled, etc.
+services:
+  redis:
+    image: redis:latest
+    container_name: redis
+    network_mode: host
+    command: redis-server --save 20 1 --loglevel warning
+  zmq-proxy:
+      image: blop-testing:latest
+      container_name: zmq-proxy
+      network_mode: host
+      command: 'bluesky-0MQ-proxy 5577 5578'
+  # Just in case you wanna run some scans which aren't through bluesky-adaptive.
+  # bluesky_plotting_callback_primary:
+  #   image: registry.hzdr.de/hzb/bluesky/core/images/bec_plotting:v0.0.1
+  #   container_name: best-effort-callback
+  #   network_mode: host
+  #   environment:
+  #     DISPLAY: ${DISPLAY}
+  #   command: ["--zmq-url", "0.0.0.0:5578"]
+  #   depends_on:
+  #     - "zmq-proxy"
+  tiled-db-and-writer:
+    image: blop-testing:latest
+    container_name: tiled-db-and-writer
+    network_mode: host
+    environment:
+      - TILED_API_KEY=secret
+      - TILED_URI=http://127.0.0.1:8000
+      - ZMQ_URI=127.0.0.1:5578
+    entrypoint:
+      - "/bin/bash"
+      - "-lc"
+      - 'python /queueserver/tiled_db_and_writer.py'
+    depends_on:
+      - zmq-proxy
+  queueserver:
+    image: blop-testing:latest
+    container_name: queueserver
+    network_mode: host
+    volumes:
+      - .:/blop-mirror-testing
+    entrypoint:
+      - "/bin/bash"
+      - "-lc"
+      - 'uv pip install --system -e /blop-mirror-testing && start-re-manager --ipython-dir /queueserver --use-ipython-kernel ON'
+    depends_on:
+      - "redis"

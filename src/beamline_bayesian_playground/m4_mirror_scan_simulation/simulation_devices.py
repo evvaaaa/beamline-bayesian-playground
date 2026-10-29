@@ -23,19 +23,20 @@ from ophyd_async.core import (
 )
 from ophyd_async.sim import SimMotor
 
-from ..data_loaders import load_spec_dat
-
 # ===== Data loading
 
-data = load_spec_dat(Path("fwhm_mirror_axes_sept_2026") / "u17_spec_scan.dat")
-data["Ty_bin"], data["Rx_bin"] = data["M4S:Ty"].round(0), data["M4S:Rx"].round(0)
-U17_FWHM_X = data.pivot(index="Ty_bin", columns="Rx_bin", values="S2Xfw")
-U17_FWHM_Y = data.pivot(index="Ty_bin", columns="Rx_bin", values="S2Yfw")
-
-data = load_spec_dat(Path("fwhm_mirror_axes_sept_2026") / "ue48_spec_scan.dat")
-data["Ty_bin"], data["Rx_bin"] = data["M4S:Ty"].round(0), data["M4S:Rx"].round(0)
-UE48_FWHM_X = data.pivot(index="Ty_bin", columns="Rx_bin", values="S2Xfw")
-UE48_FWHM_Y = data.pivot(index="Ty_bin", columns="Rx_bin", values="S2Yfw")
+U17_FWHM_X = np.load(
+    Path(__file__).parent.parent / "real_data" / "june_2026_u17_m4_mirror_grid_scan_fwhm_x.npy"
+)
+U17_FWHM_Y = np.load(
+    Path(__file__).parent.parent / "real_data" / "june_2026_u17_m4_mirror_grid_scan_fwhm_y.npy"
+)
+UE48_FWHM_X = np.load(
+    Path(__file__).parent.parent / "real_data" / "june_2026_ue48_m4_mirror_grid_scan_fwhm_x.npy"
+)
+UE48_FWHM_Y = np.load(
+    Path(__file__).parent.parent / "real_data" / "june_2026_ue48_m4_mirror_grid_scan_fwhm_y.npy"
+)
 
 
 def interpolate_grid(grid: pd.DataFrame, ty_position: float, rx_position: float) -> float:

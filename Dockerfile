@@ -24,6 +24,6 @@ COPY ./src/queueserver /queueserver
 # Copy the uv dependencies and install so that it's cached.
 COPY uv.lock ./uv.lock
 RUN pip install uv
-RUN uv export --group container --frozen --no-hashes --no-emit-project -o /requirements.txt
+RUN uv export --group container --no-dev --frozen --no-hashes --no-emit-project -o /requirements.txt
 RUN rm /uv.lock
 RUN uv pip install --system -r /requirements.txt
