@@ -101,6 +101,11 @@ if __name__ == "__main__":
         RE_MANAGER_API.environment_open()
     RE_MANAGER_API.wait_for_idle()
 
+    import numpy as np
+    import pandas as pd
+    import matplotlib.pyplot as plt
+    from .simulation_devices import U17_FWHM_Y
+
     # ====== Agent instantiation.
     agent = QueueserverAgent(
         re_manager_api=RE_MANAGER_API,
@@ -113,7 +118,7 @@ if __name__ == "__main__":
     )
 
     # Run the agent.
-    future = agent.run(iterations=40, n_points=1)
+    future = agent.run(iterations=60, n_points=1)
     future.result()  # block until completion
     print(agent.ax_client.summarize())
     figure = agent.plot_objective(
@@ -121,3 +126,45 @@ if __name__ == "__main__":
     )[0]
     if isinstance(figure, PlotlyAnalysisCard):
         figure.get_figure().show()
+
+    # truth: index = y values, columns = x values (2D grid)
+    xs, ys = U17_FWHM_Y.columns.values, U17_FWHM_Y.index.values
+    XX, YY = np.meshgrid(xs, ys)
+
+    # Evaluate the model's predictions on the same grid
+    params = [{"m4.rx": float(x), "m4.ty": float(y)} for x, y in zip(XX.ravel(), YY.ravel())]
+    preds_unflattened = preds = [x["beam_focuser"] for x in agent.ax_client.predict(points=params)]
+    # {metric: (mean, sem)}
+    mean = np.array([x[0] for x in preds_unflattened]).reshape(XX.shape)
+    sem = np.array([x[1] for x in preds_unflattened]).reshape(XX.shape)
+
+    pred_df = pd.DataFrame(mean, index=ys, columns=xs)
+    err = pred_df - U17_FWHM_Y
+
+    fig, axes = plt.subplots(1, 4, figsize=(20, 4), constrained_layout=True)
+    ext = [xs.min(), xs.max(), ys.min(), ys.max()]
+    vmin, vmax = U17_FWHM_Y.values.min(), U17_FWHM_Y.values.max()
+    for ax, data, title, cmap, kw in [
+        (axes[0], U17_FWHM_Y.values, "Truth", "viridis", dict(vmin=vmin, vmax=vmax)),
+        (axes[1], mean, "Ax prediction", "viridis", dict(vmin=vmin, vmax=vmax)),
+        (
+            axes[2],
+            np.sqrt(err.values**2),  # pointwise RMSE; equals absolute error for one value per point
+            "Pointwise RMSE",
+            "magma",
+            dict(vmin=0, vmax=np.abs(err.values).max()),
+        ),
+        (axes[3], sem, "Predicted SEM", "magma", {}),
+    ]:
+        im = ax.imshow(data, origin="lower", extent=ext, aspect="auto", cmap=cmap, **kw)
+        ax.set(title=title, xlabel="m4.rx", ylabel="m4.ty")
+        fig.colorbar(im, ax=ax)
+
+    # Overlay sampled trials
+    df = agent.ax_client.summarize()
+    if {"m4.rx", "m4.ty"} <= set(df.columns):
+        axes[1].scatter(df["m4.rx"], df["m4.ty"], c="w", edgecolor="k", s=20)
+
+    print(f"RMSE: {np.sqrt((err.values**2).mean()):.4g}")
+
+    plt.show()
