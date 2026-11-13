@@ -39,23 +39,22 @@ url = "https://download.pytorch.org/whl/cpu"
 explicit = true
 
 
-[dependency-groups]
-
-# For use inside the queueserver.
-container = [
-  "bluesky[dev]",
-  "tiled[all]",
-  "bluesky-queueserver",
-]
-
 # For running the agent outside the queueserver
+[project.optional-dependencies]
 client = [
   "tiled[client]",
   "bluesky-queueserver-api",
   "bluesky-adaptive[cpu, queueserver, ax]",
   "torch",
+  "plotly",
+  "numpy",
 ]
 
+[dependency-groups]
+
+# For use inside the queueserver.
+container = ["bluesky[dev]", "tiled[all]", "bluesky-queueserver"]
+client = ["beamline-bayesian-playground[client]"]
 dev = ["mypy", "pre-commit", "ruff", "tox-uv", "types-mock"]
 
 [project.scripts]
@@ -70,6 +69,9 @@ name = "Eva Lott"
 
 [tool.setuptools_scm]
 version_file = "src/beamline_bayesian_playground/_version.py"
+
+[tool.setuptools.package-data]
+beamline_bayesian_playground = ["real_data/**/*.dat"]
 
 [tool.mypy]
 ignore_missing_imports = true # Ignore missing stubs in imported modules

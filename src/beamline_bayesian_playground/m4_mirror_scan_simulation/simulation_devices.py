@@ -25,17 +25,17 @@ from ophyd_async.sim import SimMotor
 
 # ===== Data loading
 
-DATA_DIRECTORY = Path(__file__).parent.parent / "real_data" / "fwhm_mirror_axes_sept_2026"
+DATA_DIRECTORY = Path(__file__).parent.parent / "real_data"
 
-data = pd.read_csv(DATA_DIRECTORY / "u17_spec_scan.dat", sep=r"\s+", engine="python")
-data["Ty_bin"], data["Rx_bin"] = data["M4S:Ty"].round(0), data["M4S:Rx"].round(0)
-U17_FWHM_X = data.pivot(index="Ty_bin", columns="Rx_bin", values="S2Xfw")
-U17_FWHM_Y = data.pivot(index="Ty_bin", columns="Rx_bin", values="S2Yfw")
 
-data = pd.read_csv(DATA_DIRECTORY / "u17_spec_scan.dat", sep=r"\s+", engine="python")
-data["Ty_bin"], data["Rx_bin"] = data["M4S:Ty"].round(0), data["M4S:Rx"].round(0)
-UE48_FWHM_X = data.pivot(index="Ty_bin", columns="Rx_bin", values="S2Xfw")
-UE48_FWHM_Y = data.pivot(index="Ty_bin", columns="Rx_bin", values="S2Yfw")
+def read_spec_data(path: Path, x_signal: str, y_signal: str) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Reads the spec ascii scan data and gives dataframes of fwhm of each of x and y."""
+
+    data = pd.read_csv(path, sep=r"\s+", engine="python")
+    data["Ty_bin"], data["Rx_bin"] = data["M4S:Ty"].round(0), data["M4S:Rx"].round(0)
+    return data.pivot(index="Ty_bin", columns="Rx_bin", values=x_signal), data.pivot(
+        index="Ty_bin", columns="Rx_bin", values=y_signal
+    )
 
 
 def interpolate_grid(grid: pd.DataFrame, rx_position: float, ty_position: float) -> float:
@@ -93,29 +93,36 @@ class Mirror(StandardReadable):
             self.rx = SimMotor(units="dial")
 
 
-m4 = Mirror(name="m4")
+m4_ty = SimMotor(units="dial", name="m4_ty")
+m4_rx = SimMotor(units="dial", name="m4_rx")
 
 
 class BeamPositionMonitor(StandardReadable):
     get_simulation_values: Callable[[], Awaitable[tuple[float, float]]]
 
-    def __init__(self, x_grid: pd.DataFrame, y_grid: pd.DataFrame, name: str = "") -> None:
+    def __init__(self, scan_data: Path, x_signal: str, y_signal: str, name: str = "") -> None:
         super().__init__(name=name)
-        self._x_grid = x_grid
-        self._y_grid = y_grid
+        self._x_grid, self._y_grid = read_spec_data(scan_data, x_signal, y_signal)
         with self.add_children_as_readables(Fmt.HINTED_SIGNAL):
             self.fwhm_x, self.fwhm_x_test_setter = soft_signal_r_and_setter(float)
             self.fwhm_y, self.fwhm_y_test_setter = soft_signal_r_and_setter(float)
 
     async def read(self):
         rx, ty = await asyncio.gather(
-            m4.rx.user_readback.get_value(),
-            m4.ty.user_readback.get_value(),
+            m4_rx.user_readback.get_value(),
+            m4_ty.user_readback.get_value(),
         )
         self.fwhm_x_test_setter(interpolate_grid(self._x_grid, rx, ty))
         self.fwhm_y_test_setter(interpolate_grid(self._y_grid, rx, ty))
         return await super().read()
 
 
-ue48_mocked_bpm = BeamPositionMonitor(UE48_FWHM_X, UE48_FWHM_Y, name="bpm")
-u17_mocked_bpm = BeamPositionMonitor(U17_FWHM_X, U17_FWHM_Y, name="bpm")
+mocked_bpm_ue48_12_11_26 = BeamPositionMonitor(
+    DATA_DIRECTORY / "m4s_mirror_ue48_fwhm_12_11_26.dat", "S1Xfw", "S1Yfw", name="bpm"
+)
+mocked_bpm_u17_09_26 = BeamPositionMonitor(
+    DATA_DIRECTORY / "m4s_mirror_u17_fwhm_09_26.dat", "S2Xfw", "S2Yfw", name="bpm"
+)
+mocked_bpm_ue48_09_26 = BeamPositionMonitor(
+    DATA_DIRECTORY / "m4s_mirror_ue48_fwhm_09_26.dat", "S2Xfw", "S2Yfw", name="bpm"
+)

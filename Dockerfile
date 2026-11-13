@@ -26,7 +26,7 @@ COPY ./src/tiled_db_and_writer.py /tiled_db_and_writer.py
 
 # Copy the uv dependencies and install so that it's cached.
 COPY uv.lock ./uv.lock
-RUN pip install uv
+RUN pip install uv 'setuptools>=64' 'setuptools_scm[toml]>=8'
 RUN uv export --group container --no-dev --frozen --no-hashes --no-emit-project -o /requirements.txt
 RUN rm /uv.lock
 RUN uv pip install --system -r /requirements.txt

@@ -9,9 +9,7 @@ from bluesky.plans import PerStep, count, grid_scan  # noqa
 from bluesky.protocols import Readable
 from bluesky.utils import MsgGenerator, plan
 from bluesky_adaptive.plans import *  # noqa
-from bluesky_adaptive.protocols import (
-    Actuator,
-)
+from bluesky_adaptive.protocols import Actuator
 
 
 @plan

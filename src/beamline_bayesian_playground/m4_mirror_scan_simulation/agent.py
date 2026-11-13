@@ -1,7 +1,6 @@
 import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from beamline_bayesian_playground.m4_mirror_scan_simulation.simulation_devices import U17_FWHM_Y
 import pandas as pd
 from ax.analysis.plotly.plotly_analysis import PlotlyAnalysisCard
 from bluesky.callbacks.zmq import RemoteDispatcher
@@ -21,15 +20,15 @@ RE_MANAGER_API.wait_for_idle()
 
 # ====== Connection to docker-compose environment.
 EVALUATOR = BeamFocusEvaluator(TILED_CLIENT)
-TY_BOUNDS = (200.0, 700.0)
-RX_BOUNDS = (50.0, 250.0)
+TY_BOUNDS = (-3000, -2800)
+RX_BOUNDS = (-2020, -1820)
 OBJECTIVES = [
     Objective(name=EVALUATOR.OUTCOME_NAME, minimize=False),
 ]
-SENSORS = ["u17_mocked_bpm"]
+SENSORS = ["mocked_bpm_ue48_12_11_26"]
 DEGREES_OF_FREEDOM = [
-    RangeDOF(actuator="m4.ty", bounds=TY_BOUNDS, parameter_type="float"),
-    RangeDOF(actuator="m4.rx", bounds=RX_BOUNDS, parameter_type="float"),
+    RangeDOF(actuator="m4_ty", bounds=TY_BOUNDS, parameter_type="float"),
+    RangeDOF(actuator="m4_rx", bounds=RX_BOUNDS, parameter_type="float"),
 ]
 
 agent = QueueserverAgent(
