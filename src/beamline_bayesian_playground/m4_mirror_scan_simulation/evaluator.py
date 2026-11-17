@@ -34,9 +34,13 @@ class BeamFocusEvaluator:
         deadline = time.time() + self.timeout
         while time.time() < deadline:
             try:
-                return run["primary"].read()
+                data = run["primary"].read()
+                # The run can be readable before the detector columns are written.
+                if "bpm-fwhm_x" in data and "bpm-fwhm_y" in data:
+                    return data
             except KeyError:
-                time.sleep(self.poll_interval)
+                pass
+            time.sleep(self.poll_interval)
         raise TimeoutError(
             f"Run '{run.metadata['start']['uid']}' was not "
             f"readable after {self.timeout}s. The ZMQ-Tiled bridge may still be writing the run."

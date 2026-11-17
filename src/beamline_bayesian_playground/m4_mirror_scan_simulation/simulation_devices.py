@@ -23,9 +23,11 @@ from ophyd_async.core import (
 )
 from ophyd_async.sim import SimMotor
 
+from beamline_bayesian_playground.m4_mirror_scan_simulation.scan_grid import scan_grid_indices
+
 # ===== Data loading
 
-DATA_DIRECTORY = Path(__file__).parent.parent / "real_data"
+DATA_DIRECTORY = Path(__file__).parent / "real_data" / "spec_scans"
 
 
 def read_spec_data(path: Path, x_signal: str, y_signal: str) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -49,21 +51,7 @@ class GridInterpolator:
         values = grid.iloc[:, 0].to_numpy(dtype=float)
         if not np.isfinite(np.column_stack((ty, rx, values))).all():
             raise ValueError("Grid positions and values must be finite")
-        n = len(ty)
-        candidates = []
-        for rows in range(2, n // 2 + 1):
-            if n % rows:
-                continue
-            columns = n // rows
-            ty_groups, ty_separation = self._groups(ty, rows)
-            rx_groups, rx_separation = self._groups(rx, columns)
-            if len(np.unique(ty_groups * columns + rx_groups)) == n:
-                candidates.append(
-                    (ty_separation * rx_separation, rows, columns, ty_groups, rx_groups)
-                )
-        if not candidates:
-            raise ValueError("Scan positions must form a complete two-dimensional grid")
-        _, rows, columns, ty_groups, rx_groups = max(candidates, key=lambda item: item[0])
+        rows, columns, ty_groups, rx_groups = scan_grid_indices(ty, rx)
         points = np.empty((rows, columns, 2))
         self._values = np.empty((rows, columns))
         points[ty_groups, rx_groups] = np.column_stack((ty, rx))
@@ -106,16 +94,6 @@ class GridInterpolator:
         )
         self._boundary_points = boundary_points
         self._boundary_values = boundary_values
-
-    @staticmethod
-    def _groups(values: np.ndarray, count: int) -> tuple[np.ndarray, float]:
-        ordered = np.sort(values)
-        gaps = np.diff(ordered)
-        splits = np.sort(np.argsort(gaps)[-(count - 1) :])
-        boundaries = (ordered[splits] + ordered[splits + 1]) / 2
-        inside = np.delete(gaps, splits)
-        separation = float(np.min(gaps[splits]) / max(float(np.max(inside)), np.finfo(float).eps))
-        return np.searchsorted(boundaries, values), separation
 
     @staticmethod
     def _cross(a: np.ndarray, b: np.ndarray) -> np.ndarray:
