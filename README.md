@@ -4,7 +4,7 @@
 
 # beamline_bayesian_playground
 
-Simulation devices (with interpolated real beamline data) and a queueserver which allow for tweaking of bluesky-adaptive bayesian optimization agents.
+Simulation devices (interpolating real beamline data) and a queueserver which allow for tweaking of bluesky-adaptive bayesian optimization agents.
 
 What            | Where
 :---:           | :---:
