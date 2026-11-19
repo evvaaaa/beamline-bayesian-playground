@@ -1,0 +1,8 @@
+.git
+.venv*
+venv*
+build
+dist
+**/*.egg-info
+**/__pycache__
+**/_version.py
